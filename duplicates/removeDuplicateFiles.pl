@@ -26,7 +26,7 @@ my %configSetting = (
 	  "listMovFileExts" => ["\.mov", "\.avi", "\.mpg", "\.mp4", "\.mts" ],
 	  "debug" => 0,
 	  "info" => 1,
-	  "dryRun" => 0,
+	  "dryRun" => 1,
 	  "patternPriorityForNonDeletion" => ["OneDrive", "2_videos", "1_photos", "0_Inbox" ],
 	# "D:\\data\\data_cloud\\OneDrive\\data_family\\sync_data_family_media\\2_videos",  => Can this also work ??
      );
@@ -35,8 +35,10 @@ $oldMediaBaseDir = "d:/data/data_family/sync_data_family_media"
 &loadDuplicatesList() ;
 &markDuplicateFiles();
 if( $configSetting{"dryRun"} == 1 ) {
+	print "Going to demonstrate which files will be deleted through dry run.\n" ;
 	&dryRunRemoveDuplicateFiles();
 } else {
+	print "WARNGING !!! Will clean up all duplicates leaving only one copy of all duplicate files figuring in list !!\n" ;
 	&removeDuplicateFiles();
 }
 exit 0;
