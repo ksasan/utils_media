@@ -11,7 +11,7 @@ my %md5;
 my %hist;
 my $wasted = 0;
 my %configSetting = (
-	"maxSize" => 5.0e6,
+	"maxSize" => 5.0e4,
 	#"maxSize" => 7.0e7,
           "outFile" => "duplicateFiles.list",
           "recSep" => '|',
@@ -93,6 +93,13 @@ sub dumpFileList {
 
     foreach my $checkSum (keys %md5) {
      my @pathList = () ;
+     my @allFiles = (@{$md5{$checkSum}{"files"}}) ;
+     if(@allFiles == 1) {
+	     #print "Found no duplicate for hash $checkSum \n" ;
+	     # No duplicate file actually exists for this checksum and possibly multiple files of same size exists
+	     # This can be further expanded to check in case file name and creation date are kind of same, there may be additional logic required here!!
+	     next ;
+     }
      foreach my $fileName (@{$md5{$checkSum}{"files"}}) { push(@pathList, File::Spec->rel2abs($fileName)); }
      push(@records, sprintf("%d%s%s%s%d%s%s", scalar(@pathList), $recSep, $checkSum, $recSep, $md5{$checkSum}{"size"}, $recSep, join($recSep, @pathList)))
     }

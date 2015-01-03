@@ -14,6 +14,7 @@
 use Data::Dumper;
 
 
+my $debugging = 0;
 my %md5;
 my %configSetting = (
 	#"maxSize" => 5.0e6,
@@ -27,11 +28,12 @@ my %configSetting = (
 	  "debug" => 0,
 	  "info" => 1,
 	  "dryRun" => 1,
-	  "patternPriorityForNonDeletion" => ["OneDrive", "2_videos", "1_photos", "0_Inbox" ],
-	# "D:\\data\\data_cloud\\OneDrive\\data_family\\sync_data_family_media\\2_videos",  => Can this also work ??
+	  "patternPriorityForNonDeletion" => ["OneDrive", "2_videos", "1_photos", "0_Inbox", "data_family", "data_media", "data_JUNK", "data_to_sort" ],
+	  #"patternPriorityForNonDeletion" => ["OneDrive", "2_videos", "1_photos", "0_Inbox", "data_family", "data_media", "data_JUNK" ],
+	    # "D:\\data\\data_cloud\\OneDrive\\data_family\\sync_data_family_media\\2_videos",  => Can this also work ??
      );
 
-$oldMediaBaseDir = "d:/data/data_family/sync_data_family_media"
+$oldMediaBaseDir = "d:/data/data_family/sync_data_family_media" ;
 &loadDuplicatesList() ;
 &markDuplicateFiles();
 if( $configSetting{"dryRun"} == 1 ) {
@@ -55,6 +57,19 @@ sub loadDuplicatesList() {
 	$x++ ;
 	my($num, $md5hash, $size, @duplicateFiles ) ;
 	($num, $md5hash, $size, @duplicateFiles ) = split($recSep, $_);
+
+	# ------------------------------------------------------------------------
+	# HACK for debugging specific records .....
+	# MD5hash = 59b5a52ef375b9c0ccc6a443471fedeb
+	if( $debugging ) {
+		if( $md5hash eq "366eb4083d5a0e8e5c37bfa8fc25a33d" ) {	 # 366eb4083d5a0e8e5c37bfa8fc25a33d , "59b5a52ef375b9c0ccc6a443471fedeb" 
+			printf "Found DEBUG POINT $md5hash \n"; # . "for @duplicateFiles (num = $num vs %d)\n", scalar(@duplicateFiles);
+		} else {
+			next ;
+		}
+	}
+	# ------------------------------------------------------------------------
+	
 	if(@duplicateFiles != $num) {
 	    $dupNum = @duplicateFiles ;
 	    warn "Record $x has some problem ($num versus $dupNum, @duplicateFiles ) !!\n" ;
@@ -92,6 +107,7 @@ sub markDuplicateFiles()
 	   }
 	   $pattern{$md5Hash} = {} ; 
 	   $md5{$md5Hash}{markForDeletion} = [] ;
+	   my $atleastOneFileFound = 0 ;
 	   foreach $patternStr (@allPatternStrs) {
 	       # Patterns are searched in priority order !!
 	        my $found = grep(/$patternStr/, @dupFilesList);
@@ -109,6 +125,7 @@ sub markDuplicateFiles()
 			   $md5{$md5Hash}{markForDeletion}[$i] = 1 ;
 			}
 		    }
+		    $atleastOneFileFound = 1;
 		    last ;
 		} else {
 		    # More than one entries found. Mark all other entries + ($found - 1) entries here for deletion !!
@@ -121,12 +138,16 @@ sub markDuplicateFiles()
 			   $md5{$md5Hash}{markForDeletion}[$i] = 1 ;
 			}
 		    }
+		    $atleastOneFileFound = 1;
 		    last ;
 		}
 	   }
+	   if( $atleastOneFileFound == 0 ) {
+	       print "No files marked for hash $md5Hash and files @dupFilesList \n" ;
+	   }
 	}
 	#print Dumper(\%md5);
-    #print Dumper(\%pattern);
+	#print Dumper(\%pattern);
 }
 
 sub removeDuplicateFiles()
