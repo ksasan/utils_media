@@ -1,5 +1,12 @@
 #!perl.exe
 
+# ----------------------------------------------------------------------
+# 
+# Still ToDo:
+# 1. Chdir to deeply nested directory fails. Need to fix it!
+# 2. Extra set of ||| at end of hst file
+# ----------------------------------------------------------------------
+
 use strict;
 use File::Find;
 use File::Spec;
@@ -50,11 +57,25 @@ sub loadHistoryFile() {
     }
     close(HISTFILE);
 }
+#
+# Yet to be completed (TODO)
+#
+sub getHashFiles {
+    my(@files, @hashFiles) = @_ ;
+     foreach my $file (@{$files{$size}}) {
+         open(FILE, $file) or next;
+         binmode(FILE);
+         my $md5hash = &getUpdatedHash($file);
+	 push(@hashFiles, $md5hash);
+         close(FILE);
+     }
+}
 
 sub createDuplicateList() {
     local $" = ", ";
     foreach my $size (sort {$b <=> $a} keys %files) {
      next unless @{$files{$size}} > 1;
+     # Scaling Operation => Can utilize multi processing here !!
      foreach my $file (@{$files{$size}}) {
          open(FILE, $file) or next;
          binmode(FILE);
