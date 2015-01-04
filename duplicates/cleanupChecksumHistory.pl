@@ -4,12 +4,9 @@ use strict;
 
 my %hist;
 my %configSetting = (
-	"maxSize" => 5.0e6,
-	#"maxSize" => 7.0e7,
           "outFile" => "duplicateFiles.list",
           "recSep" => '|',
           "historyFile" => "checksumHistory.hst",
-	  "backupWithTimeStamp" => 1,
      );
 
 
@@ -40,8 +37,11 @@ sub loadHistoryFile() {
 
 sub cleanupHistoryFile()  {
 	foreach my $fullPath (keys %hist) {
-		if( ! -e $hist{$fullPath} ) {
+		if( ! -e $fullPath ) {
 			delete($hist{$fullPath}) ;
+			#print "Removing $fullPath ...\n" ;
+		} else {
+			#print "Keeping $fullPath ...\n" ;
 		}
 	}
 }

@@ -24,11 +24,10 @@ my %configSetting = (
 	  "dirSeparator" => "/",
           "historyFile" => "checksumHistory.hst",
 	  "backupWithTimeStamp" => 1,
-	  "listMovFileExts" => ["\.mov", "\.avi", "\.mpg", "\.mp4", "\.mts" ],
 	  "debug" => 0,
 	  "info" => 1,
-	  "dryRun" => 1,
-	  "patternPriorityForNonDeletion" => ["OneDrive", "2_videos", "1_photos", "0_Inbox", "data_family", "data_media", "data_JUNK", "data_to_sort" ],
+	  "dryRun" => 0,
+	  "patternPriorityForNonDeletion" => ["OneDrive", "data_JUNK", "data_media", "data_to_sort", "2_videos", "1_photos", "0_Inbox", "data_family", "data_media" ],
 	  #"patternPriorityForNonDeletion" => ["OneDrive", "2_videos", "1_photos", "0_Inbox", "data_family", "data_media", "data_JUNK" ],
 	    # "D:\\data\\data_cloud\\OneDrive\\data_family\\sync_data_family_media\\2_videos",  => Can this also work ??
      );
@@ -110,7 +109,7 @@ sub markDuplicateFiles()
 	   my $atleastOneFileFound = 0 ;
 	   foreach $patternStr (@allPatternStrs) {
 	       # Patterns are searched in priority order !!
-	        my $found = grep(/$patternStr/, @dupFilesList);
+	        my $found = grep(/$patternStr/, @dupFilesList);	# patternPriorityForNonDeletion
 	   	$pattern{$md5Hash}{$patternStr} = $found ;
 		if( $found <= 0) {
 		    # Pattern not found. Look for next priority pattern
@@ -162,7 +161,9 @@ sub removeDuplicateFiles()
 		next ;
 	    }
 	    print "Removing $dupFilesList[$i] ... \n" ;
-	    unlink($dupFilesList[$i]);
+	    if( !unlink($dupFilesList[$i])) {
+		  warn "Can't delete file $dupFilesList[$i] \n" ;
+	    }
 	}
     }
 }
