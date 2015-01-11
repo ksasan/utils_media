@@ -5,6 +5,10 @@
 # Still ToDo:
 # 1. Chdir to deeply nested directory fails. Need to fix it!
 # 2. Extra set of ||| at end of hst file
+# 3. Parallel processing of directories based upon number of processors
+#    available
+# 4. 
+# 
 # ----------------------------------------------------------------------
 
 use strict;
@@ -18,7 +22,7 @@ my %md5;
 my %hist;
 my $wasted = 0;
 my %configSetting = (
-	"maxSize" => 5.0e4,
+	"maxSize" => 3.0e6,
 	#"maxSize" => 7.0e7,
           "outFile" => "duplicateFiles.list",
           "recSep" => '|',
@@ -61,7 +65,7 @@ sub loadHistoryFile() {
 # Yet to be completed (TODO)
 #
 sub getHashFiles {
-    my(@files, @hashFiles) = @_ ;
+    my(@files, @hashFiles, $fl, $size) = @_ ;
      foreach my $file (@{$files{$size}}) {
          open(FILE, $file) or next;
          binmode(FILE);
@@ -77,10 +81,9 @@ sub createDuplicateList() {
      next unless @{$files{$size}} > 1;
      # Scaling Operation => Can utilize multi processing here !!
      foreach my $file (@{$files{$size}}) {
-         open(FILE, $file) or next;
-         binmode(FILE);
+	-f $file || next ;
+	#-f $file or next ;
          my $md5hash = &getUpdatedHash($file);
-         #my $md5hash = Digest::MD5->new->addfile(*FILE)->hexdigest ;
          if( exists($md5{$md5hash})) {
           push @{$md5{$md5hash}{"files"}}, $file;
          } else {
@@ -90,7 +93,6 @@ sub createDuplicateList() {
           push @{$md5{$md5hash}{"files"}},$file;
          }
          #push @{$md5{$md5hash}},$file;
-         close(FILE);
      }
     }
     foreach my $hash (keys %md5) {
